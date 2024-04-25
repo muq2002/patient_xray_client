@@ -11,16 +11,16 @@ const PatientReport = () => {
     // Fetch patient data and report based on UUID
     const fetchPatientData = async () => {
       try {
-        // Fetch patient information
+        // Fetch patient information 192.168.0.105
         const patientResponse = await axios.get(
-          `http://192.168.0.105:5000/api/patients/uuid/${uuid}`
+          `http://localhost:5000/api/patients/uuid/${uuid}`
         );
         setPatient(patientResponse.data);
         var patientId = patientResponse.data.ID;
 
         // Fetch report (doctor's comments and related images)
         const reportResponse = await axios.get(
-          `http://192.168.0.105:5000/api/upload/${patientId}`
+          `http://localhost:5000/api/upload/${patientId}`
         );
         setReport(reportResponse.data);
       } catch (error) {
@@ -47,7 +47,10 @@ const PatientReport = () => {
       {/* Patient information */}
       <div className="card mb-4">
         <div className="card-body">
-          <h2 className="card-title text-center mb-4">Patient Information</h2>
+          <h2 className="card-title text-center mb-4">Clinical Report</h2>
+          <p className="card-text">
+            UUID: <b>{patient.UUID}</b>
+          </p>
           <p className="card-text">
             Name: <b>{patient.Name}</b>
           </p>
@@ -55,10 +58,7 @@ const PatientReport = () => {
             Age: <b>{patient.Age}</b>
           </p>
           <p className="card-text">
-            Gender: <b>{patient.Gender}</b>
-          </p>
-          <p className="card-text">
-            UUID: <b>{patient.UUID}</b>
+            Gender: <b>{patient.Gender === 0 ? "Male" : "Female"}</b>
           </p>
         </div>
       </div>
@@ -78,7 +78,7 @@ const PatientReport = () => {
           <div className="row">
             <div className="col-md-4">
               <img
-                src={`http://192.168.0.105:5000/api/upload/${patient.ID}`}
+                src={`http://localhost:5000/api/upload/${patient.ID}`}
                 className="img-fluid mb-3"
               />
             </div>

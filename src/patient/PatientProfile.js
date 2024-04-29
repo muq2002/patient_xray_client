@@ -8,6 +8,7 @@ const PatientProfile = () => {
   const [patient, setPatient] = useState(null);
   const [selectedFile, setSelectedFile] = useState(null);
   const [uploadStatus, setUploadStatus] = useState("");
+  const [comments, setComments] = useState(""); // State for comments
 
   useEffect(() => {
     const fetchPatient = async () => {
@@ -28,6 +29,11 @@ const PatientProfile = () => {
     setSelectedFile(event.target.files[0]);
   };
 
+  const handleCommentsChange = (event) => {
+    setComments(event.target.value);
+  };
+
+  // Define the handleUpload function
   const handleUpload = async (event) => {
     event.preventDefault();
 
@@ -54,6 +60,55 @@ const PatientProfile = () => {
     } catch (error) {
       console.error("Error uploading file:", error);
       setUploadStatus("Error uploading file. Please try again.");
+    }
+  };
+  const sendPredictionRequest = async () => {
+    try {
+      const imagePathResponse = await axios.get(
+        `http://localhost:5000/api/upload/info/${id}`
+      );
+      console.log(imagePathResponse.data[0].ImagePath);
+      if (imagePathResponse.data && imagePathResponse.data[0].ImagePath) {
+        const imagePath = imagePathResponse.data[0].ImagePath;
+
+        const response = await axios.post(
+          "http://127.0.0.1:5000/predict",
+          {
+            image_path: imagePath,
+          },
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        console.log("Prediction:", response.data.prediction);
+        setComments(response.data.prediction);
+      } else {
+        console.error("Image path not found in the response.");
+      }
+    } catch (error) {
+      console.error(
+        "Error fetching image path or sending prediction request:",
+        error
+      );
+    }
+  };
+  const handleSave = async (event) => {
+    event.preventDefault();
+
+    try {
+      const response = await axios.post(`http://localhost:5000/api/diagnosis`, {
+        PatientID: patient.ID,
+        ImageID: 1, // You may need to replace this with the actual ImageID
+        Comments: comments,
+      });
+
+      setUploadStatus("Diagnosis data saved successfully.");
+    } catch (error) {
+      console.error("Error saving diagnosis data:", error);
+      setUploadStatus("Error saving diagnosis data. Please try again.");
     }
   };
 
@@ -96,8 +151,8 @@ const PatientProfile = () => {
           <div className="mt-3">
             <div className="card-body">
               <h5>Diagnosis</h5>
-              <hr/>
-              <form onSubmit={handleUpload}>
+              <hr />
+              <form>
                 <div className="image-input">
                   <div>
                     <p className="card-text">
@@ -111,27 +166,42 @@ const PatientProfile = () => {
                       accept="image/*"
                     />
                   </div>
-                  <button type="submit" className="btn btn-primary mt-2 me-2">
+                  <button
+                    type="button"
+                    className="btn btn-primary mt-2 me-2"
+                    onClick={handleUpload}
+                  >
                     Upload
                   </button>
                 </div>
                 <br />
 
                 <div className="mb-3">
-                  <label for="exampleFormControlTextarea1" class="form-label">
-                    <b>Doctor Comment:</b>
+                  <label htmlFor="comments" className="form-label">
+                    <b>Doctor's Comments:</b>
                   </label>
                   <textarea
                     className="form-control my-input"
-                    id="exampleFormControlTextarea1"
+                    id="comments"
                     rows="3"
+                    value={comments}
+                    onChange={handleCommentsChange}
                   ></textarea>
                 </div>
-                <button type="submit" className="btn btn-danger mt-2 me-2">
-                  Run CAD
-                </button>
-                <button type="submit" className="btn btn-success mt-2">
+
+                <button
+                  type="button"
+                  className="btn btn-success mt-2"
+                  onClick={handleSave}
+                >
                   Save
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-danger mt-2"
+                  onClick={sendPredictionRequest}
+                >
+                  Run
                 </button>
               </form>
               {uploadStatus && <p>{uploadStatus}</p>}
@@ -141,9 +211,9 @@ const PatientProfile = () => {
 
         {/* Right side: QR code */}
         <div className="col-md-6 d-flex justify-content-center align-items-top mt-5">
-          <div className="row justify-content-between algin-items-center">
+          <div className="row justify-content-between align-items-center">
             <QRCode
-              value={`http://192.168.0.105:3000/report/${patient.UUID}`}
+              value={`http://192.168.0.107:5000/api/patients/uuid/${patient.UUID}`}
               size={200}
             />
             <br />
@@ -151,6 +221,7 @@ const PatientProfile = () => {
               <img
                 style={{ width: "250px", height: "250px" }}
                 src={`http://localhost:5000/api/upload/${patient.ID}`}
+                alt="Patient X-ray"
               />
             </div>
           </div>

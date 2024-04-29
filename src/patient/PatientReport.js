@@ -20,9 +20,10 @@ const PatientReport = () => {
 
         // Fetch report (doctor's comments and related images)
         const reportResponse = await axios.get(
-          `http://localhost:5000/api/upload/${patientId}`
+          `http://localhost:5000/api/diagnosis/${patientId}`
         );
         setReport(reportResponse.data);
+        console.log(reportResponse.data);
       } catch (error) {
         console.error("Error fetching patient data or report:", error);
       }
@@ -67,7 +68,7 @@ const PatientReport = () => {
       <div className="card mb-4">
         <div className="card-body">
           <h4>Doctor's Comments</h4>
-          <p>{report.comments}</p>
+          <p>{report[0].Comments}</p>
         </div>
       </div>
 

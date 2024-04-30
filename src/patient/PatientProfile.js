@@ -20,6 +20,16 @@ const PatientProfile = () => {
       } catch (error) {
         console.error("Error fetching patient:", error);
       }
+
+      try {
+        const response = await axios.get(
+          `http://192.168.0.108:5000/api/diagnosis/${id}`
+        );
+        setComments(response.data[0].Comments);
+      } catch (error) {
+        console.error("Error fetching diagnosis:", error);
+      }
+
     };
 
     fetchPatient();
@@ -213,7 +223,7 @@ const PatientProfile = () => {
         <div className="col-md-6 d-flex justify-content-center align-items-top mt-5">
           <div className="row justify-content-between align-items-center">
             <QRCode
-              value={`http://192.168.0.107:5000/api/patients/uuid/${patient.UUID}`}
+              value={`http://192.168.0.108:5000/api/patients/uuid/${patient.UUID}`}
               size={200}
             />
             <br />
